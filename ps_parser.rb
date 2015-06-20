@@ -44,15 +44,16 @@ class PsParser
 end
 
 class ParsePsOutput
+  def initialize(unix_cmd)
+    @unix_cmd = unix_cmd
+  end
+
   def tail
-    loop do
-      call
-      sleep 1
-    end
+    loop { call; sleep 1 }
   end
 
   def call
-    open("|ps -f | grep thin") do |f|
+    open("|#{unix_cmd}") do |f|
       puts "\n\n"
 
       f.each_line do |line|
@@ -61,13 +62,16 @@ class ParsePsOutput
       end
     end
   end
+
+  private
+
+  attr_reader :unix_cmd
 end
 
 # require "minitest"
 require "minitest/autorun"
 
 class TestMeme < Minitest::Test
-  # "  UID   PID  PPID   C STIME   TTY           TIME CMD\n"
   def setup
     @line = <<-LINE
       0     1     0   0 12Jun15 ??   10:21.65 /sbin/launchd
@@ -108,4 +112,10 @@ class TestMeme < Minitest::Test
   end
 end
 
-# ParsePsOutput.new.tail
+cmd = if ARGV.empty?
+        "ps -f"
+      else
+        ARGV.join(" ")
+      end
+
+ParsePsOutput.new(cmd).tail
