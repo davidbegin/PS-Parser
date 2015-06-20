@@ -5,43 +5,32 @@ class PsParser
     @line = line
   end
 
-  def uid
-    number_matches[0]
-  end
-
-  def pid
-    number_matches[1]
-  end
-
-  def ppid
-    number_matches[2]
-  end
-
-  def c
-    number_matches[3]
+  {
+    :uid  => 0,
+    :pid  => 1,
+    :ppid => 2,
+    :c    => 3
+  }.each_pair do |meth, i|
+    define_method meth do
+      number_matches[i]
+    end
   end
 
   def stime
-    Regexp.new(/(\d{2}\w{3}\d{2})/)
-    .match(line)
-    .captures.first
+    line[/(\d{2}\w{3}\d{2})/]
+  end
+
+  def time
+    line[/(\d{2}:\d{2}\.\d{2})/]
+  end
+
+  def cmd
+    line[/(\S+)$/]
   end
 
   def tty
     Regexp.new(/\d{2}\w{3}\d{2}\s+(\S+)/)
-    .match(line)
-    .captures.first
-  end
-
-  def time
-    Regexp.new(/(\d{2}:\d{2}\.\d{2})/)
-    .match(line)
-    .captures.first
-  end
-
-  def cmd
-    Regexp.new(/(\S+)$/)
-      .match(line.strip)
+      .match(line)
       .captures.first
   end
 
@@ -74,8 +63,8 @@ class ParsePsOutput
   end
 end
 
-require "minitest"
-# require "minitest/autorun"
+# require "minitest"
+require "minitest/autorun"
 
 class TestMeme < Minitest::Test
   # "  UID   PID  PPID   C STIME   TTY           TIME CMD\n"
@@ -119,4 +108,4 @@ class TestMeme < Minitest::Test
   end
 end
 
-ParsePsOutput.new.tail
+# ParsePsOutput.new.tail
